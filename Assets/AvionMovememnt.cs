@@ -4,29 +4,48 @@ using UnityEngine;
 
 public class AvionMovememnt : MonoBehaviour
 {
-    public float moveSpeed = 2f;
-    private Rigidbody rb;
-    // Start is called before the first frame update
-    void Start()
+    public float moveSpeed = 0.5f; // Velocidad de movimiento del avión
+    public float limiteSuperior = 4.5f; // Límite superior del movimiento del avión
+    public float limiteInferior = -4.5f; // Límite inferior del movimiento del avión
+    public float limiteDerecho = 8f; // Límite derecho del movimiento del avión
+    public float limiteIzquierdo = -8f; // Límite izquierdo del movimiento del avión
+
+    private void Update()
     {
-        rb = GetComponent<Rigidbody>();
+        // Movimiento horizontal
+        float moveInputHorizontal = Input.GetAxis("Horizontal");
+        float moveHorizontal = moveInputHorizontal * moveSpeed * Time.deltaTime;
+        transform.Translate(Vector3.right * moveHorizontal);
+
+        // Movimiento vertical
+        float moveInputVertical = Input.GetAxis("Vertical");
+        float moveVertical = moveInputVertical * moveSpeed * Time.deltaTime;
+        transform.Translate(Vector3.up * moveVertical);
+
+        // Movimiento hacia adelante
+        float moveForward = moveSpeed * Time.deltaTime;
+        transform.Translate(Vector3.forward * moveForward);
+
+        // Limitar el movimiento del avión
+        Vector3 posicionActual = transform.position;
+        posicionActual.x = Mathf.Clamp(posicionActual.x, limiteIzquierdo, limiteDerecho);
+        posicionActual.y = Mathf.Clamp(posicionActual.y, limiteInferior, limiteSuperior);
+        transform.position = posicionActual;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnCollisionEnter(Collision collision)
     {
-        float moveInputVertical = Input.GetAxis("Vertical");
-        float moveInputHorizontal = Input.GetAxis("Horizontal");
+        if (collision.gameObject.CompareTag("Nube"))
+        {
+            // Aquí puedes añadir código para lo que ocurra cuando el avión colisiona con una nube
+            Debug.Log("¡El avión chocó con una nube!");
+            // Por ejemplo, puedes reiniciar el juego, mostrar un mensaje de game over, etc.
+        }
+    }
 
-        // Calcular el vector de movimiento basado en la entrada
-        Vector3 moveDirection = new Vector3(moveInputHorizontal, 0f, moveInputVertical);
-
-        // Normalizar el vector para mantener la misma velocidad de movimiento en todas las direcciones
-        moveDirection.Normalize();
-
-        // Mover el Rigidbody en la dirección calculada
-        rb.MovePosition(rb.position + moveDirection * moveSpeed * Time.fixedDeltaTime);
-
+    public void SetMoveSpeed(float newSpeedAdjustment)
+    {
+        moveSpeed += newSpeedAdjustment;
     }
 }
 
